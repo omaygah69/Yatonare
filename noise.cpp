@@ -27,7 +27,6 @@ Image GenerateNoiseMap(int mapwidth, int mapheight, int seed, float scale, int o
     float half_width = mapwidth / 2.0f;
     float half_height = mapheight / 2.0f;
 
-
     for(int y = 0; y < mapheight; y++)
     {
         for(int x = 0; x < mapwidth; x++)

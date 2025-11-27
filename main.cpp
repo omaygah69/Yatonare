@@ -22,13 +22,6 @@ int main()
     std::vector<TerrainType> regions;
     Vector3 model_position = { -8.0f, 0.0f, -8.0f }; 
 
-    Camera camera = { 0 };
-    camera.position = (Vector3){ 18.0f, 520.0f, 18.0f };     
-    camera.target = (Vector3){ 0.0f, 0.0f, 0.0f };          
-    camera.up = (Vector3){ 0.0f, 1.0f, 0.0f };              
-    camera.fovy = 50.0f;                                    
-    camera.projection = CAMERA_PERSPECTIVE;                 
-    
     regions.push_back({"DarkWater", 0.3f, {54, 103, 199, 255}});
     regions.push_back({"Water", 0.4f, BLUE});
     regions.push_back({"Sand", 0.46f, BEIGE});
@@ -49,21 +42,35 @@ int main()
     terrain.mesh = GenLeveledMesh(noise, mesh_size);
     terrain.model = LoadModelFromMesh(terrain.mesh);
     terrain.model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = texture; // Set map diffuse texture
-    
-    SetTextureFilter(texture, ICON_FILTER_POINT); // or FILTER_TRILINEAR
-    int posX = (950 - texture.width) / 2;
-    int posY = (height - texture.height) / 2;
 
+    // SetTextureFilter(texture, ICON_FILTER_POINT); // or FILTER_TRILINEAR
+    Camera camera = { 0 };
+    camera.position = (Vector3){ mesh_size.x / 2, mesh_size.y + 100.0f, mesh_size.z / 2 };          
+    camera.target = (Vector3){ 0.0f, 0.0f, 0.0f };          
+    camera.up = (Vector3){ 0.0f, 1.0f, 0.0f };              
+    camera.fovy = 50.0f;                                    
+    camera.projection = CAMERA_PERSPECTIVE;          
+    
+    bool paused = false;
     // UnloadImage(color_map);
     // UnloadImage(noise);
-    // DisableCursor();
+    DisableCursor();
     while(!WindowShouldClose())
     {
-        int side_bar_width = GetScreenWidth() / 4;
+        int side_bar_width = GetScreenWidth() / 5;
         int side_bar_pos = GetScreenWidth() - side_bar_width;
-        float slider_pos = side_bar_pos + 25.0f;
+        float slider_pos = side_bar_pos + 5.0f;
         auto_update = false;
-        UpdateCamera(&camera, CAMERA_FREE);
+        if (IsKeyPressed(KEY_F)) {
+            paused = !paused;
+            if (paused) {
+                ShowCursor();
+            } else {
+                DisableCursor();
+            }
+        }
+        if(!paused)
+            UpdateCamera(&camera, CAMERA_FREE);
 
         BeginDrawing();
         ClearBackground(SKYBLUE);
@@ -72,17 +79,16 @@ int main()
         EndMode3D();
         // DrawTexture(texture, posX, posY, WHITE);
         DrawTextureEx(texture, (Vector2){0, 0}, 0.0f, 1.0f, WHITE);
-
-        DrawLine(side_bar_pos, 0, side_bar_pos, GetScreenHeight(), (Color){ 218, 218, 218, 255 });
-        DrawRectangle(side_bar_pos, 0, GetScreenWidth(), GetScreenHeight(), (Color){ 232, 232, 232, 255 });
+        DrawRectangle(side_bar_pos, 0, GetScreenWidth(), GetScreenHeight() / 2, (Color){ 232, 232, 232, 255 });
 
         auto_update |= GuiSliderFloat((Rectangle){ slider_pos + 100, 40, 120, 20 }, "Scale", &noise_scale, 0.0f, 100.0f);
         auto_update |= GuiSliderFloat((Rectangle){ slider_pos + 100, 80, 120, 20 }, "Lacunarity", &lacunarity, 0.0f, 10.0f);
         auto_update |= GuiSliderFloat((Rectangle){ slider_pos + 100, 120, 120, 20 }, "Persistence", &persistence, 0.0f, 5.0f);
         auto_update |= GuiSliderInt((Rectangle){ slider_pos + 100, 160, 120, 20 }, "Seed", &seed, 1, 10);
         auto_update |= GuiSliderInt((Rectangle){ slider_pos + 100, 200, 120, 20 }, "Octaves", &octaves, 1, 10);
-        auto_update |= GuiSliderFloat((Rectangle){ slider_pos + 100, 240, 120, 20 }, "Offsetx", &offset.x, 0.0f, 20.0f);
-        auto_update |= GuiSliderFloat((Rectangle){ slider_pos + 100, 280, 120, 20 }, "Offsety", &offset.y, 0.0f, 20.0f);
+        auto_update |= GuiSliderFloat((Rectangle){ slider_pos + 100, 240, 120, 20 }, "Offsetx", &offset.x, 0.0f, 5.0f);
+        auto_update |= GuiSliderFloat((Rectangle){ slider_pos + 100, 280, 120, 20 }, "Offsety", &offset.y, 0.0f, 5.0f);
+        auto_update |= GuiSliderFloat((Rectangle){ slider_pos + 100, 320, 120, 20 }, "MeshHeight", &mesh_size.y, 0.0f, 300.0f);
         
         if(auto_update)
         {

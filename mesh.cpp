@@ -1,4 +1,5 @@
 #include "terrain.h"
+#include "mesh.h"
 
 Mesh GenLeveledMesh(Image heightmap, Vector3 size) {
     Color *pixels = (Color *)heightmap.data;
@@ -22,3 +23,4 @@ Mesh GenLeveledMesh(Image heightmap, Vector3 size) {
     Mesh mesh = GenMeshHeightmap(heightmap, size); 
     return mesh;
 }
+
