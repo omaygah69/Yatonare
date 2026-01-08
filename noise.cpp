@@ -73,7 +73,7 @@ Image GenerateNoiseMap(int mapwidth, int mapheight, int seed, float scale, int o
 
 Image GenerateColorMap(int map_width, int map_height, const Image& noise, std::vector<TerrainType> regions)
 {
-    std::sort(regions.begin(), regions.end(), [](const TerrainType& a, const TerrainType& b) {
+    std::sort(regions.begin(), regions.end(), [](const TerrainType& a, const TerrainType& b){
         return a.height < b.height;
     });
     Image color_map = GenImageColor(map_width, map_height, WHITE);

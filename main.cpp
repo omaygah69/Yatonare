@@ -8,10 +8,10 @@ int main()
     const int width = 1280;
     const int height = 720;
     InitWindow(width, height, "cs2");
-
+    
     bool auto_update = false;
-    int map_width = 100;
-    int map_height = 100;
+    int map_width = 256;
+    int map_height = 256;
     DrawMode draw_mode = COLOR_MAP;
     float noise_scale = 35.0f;
     int octaves = 5;
@@ -31,13 +31,13 @@ int main()
     regions.push_back({"Mountain", 0.8f, DARKBROWN});
     regions.push_back({"Dagestan", 0.9f, { 50, 50, 47, 255 }});
     regions.push_back({"Siberia", 1.0f, RAYWHITE});
-
+ 
     Image noise = GenerateNoiseMap(map_width, map_height, seed, noise_scale,
                                    octaves, persistence, lacunarity, offset);
     Image color_map = GenerateColorMap(map_width, map_height, noise, regions);
     Texture2D texture = LoadTextureFromImage(noise);
     Terrain terrain = { 0 };
-    Vector3 mesh_size = {1000, 200, 1000};
+    Vector3 mesh_size = {256, 32, 256};
     terrain.texture = LoadTextureFromImage(color_map);
     terrain.mesh = GenLeveledMesh(noise, mesh_size);
     terrain.model = LoadModelFromMesh(terrain.mesh);
@@ -55,12 +55,16 @@ int main()
     // UnloadImage(color_map);
     // UnloadImage(noise);
     DisableCursor();
+    int side_bar_width = GetScreenWidth() / 5;
+    int side_bar_pos = GetScreenWidth() - side_bar_width;
+    float slider_pos = side_bar_pos + 5.0f;
     while(!WindowShouldClose())
     {
-        int side_bar_width = GetScreenWidth() / 5;
-        int side_bar_pos = GetScreenWidth() - side_bar_width;
-        float slider_pos = side_bar_pos + 5.0f;
+        side_bar_width = GetScreenWidth() / 5;;
+        side_bar_pos = GetScreenWidth() - side_bar_width;
+        slider_pos = side_bar_pos + 5.0f;
         auto_update = false;
+        
         if (IsKeyPressed(KEY_F)) {
             paused = !paused;
             if (paused) {
@@ -75,10 +79,10 @@ int main()
         BeginDrawing();
         ClearBackground(SKYBLUE);
         BeginMode3D(camera);
-        DrawModel(terrain.model, model_position, 1.0f, RAYWHITE);
+        DrawModel(terrain.model, model_position, 1.0f, WHITE);
         EndMode3D();
         // DrawTexture(texture, posX, posY, WHITE);
-        DrawTextureEx(texture, (Vector2){0, 0}, 0.0f, 1.0f, WHITE);
+        DrawTextureEx(texture, (Vector2){0, 0}, 0.0f, 0.3f, WHITE);
         DrawRectangle(side_bar_pos, 0, GetScreenWidth(), GetScreenHeight() / 2, (Color){ 232, 232, 232, 255 });
 
         auto_update |= GuiSliderFloat((Rectangle){ slider_pos + 100, 40, 120, 20 }, "Scale", &noise_scale, 0.0f, 100.0f);
@@ -92,14 +96,15 @@ int main()
         
         if(auto_update)
         {
-            UnloadTexture(texture);
-            UnloadTexture(terrain.texture);  
+            // UnloadTexture(texture);
+            UnloadTexture(terrain.texture);
             UnloadImage(noise);
             noise = GenerateNoiseMap(map_width, map_height, seed, noise_scale, octaves, persistence, lacunarity, offset);
             if(draw_mode == NOISE_MAP){
                 texture = LoadTextureFromImage(noise);
             }
             if(draw_mode == COLOR_MAP){
+                UnloadModel(terrain.model);
                 color_map = GenerateColorMap(map_width, map_height, noise, regions);
                 texture = LoadTextureFromImage(color_map);
                 terrain.texture = texture;
@@ -112,9 +117,12 @@ int main()
         EndDrawing();
     }
 
-    UnloadTexture(texture);
+    // UnloadImage(color_map);
+    UnloadImage(noise);
+    // UnloadTexture(texture);
     UnloadTexture(terrain.texture);
     UnloadModel(terrain.model);
     CloseWindow();
     return 0;
 }
+
